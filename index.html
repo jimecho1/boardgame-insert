@@ -8,29 +8,48 @@
   </head>
   <body>
     <header>
-      <h1>Boardgame Insert Generator</h1>
-      <p class="tag">開發中 · 第 0 步：一個卡牌 tray 嘅示範</p>
+      <div>
+        <h1>Boardgame Insert Generator</h1>
+        <p class="tag">輸入配件，自動排出可以 3D 打印嘅收納 tray</p>
+      </div>
+      <div class="actions">
+        <button id="example" class="ghost">載入 Wingspan 範例</button>
+        <button id="share" class="ghost">複製分享連結</button>
+      </div>
     </header>
     <main>
-      <section class="panel">
-        <label>卡牌規格
-          <select id="cardSize"></select>
-        </label>
-        <label>張數
-          <input id="count" type="number" min="1" max="500" value="60" />
-        </label>
-        <label>卡套
-          <select id="sleeve">
-            <option value="none">冇套</option>
-            <option value="thin" selected>薄套</option>
-            <option value="thick">厚套</option>
-          </select>
-        </label>
-        <p id="dims" class="dims"></p>
-        <button id="download" disabled>下載 STL</button>
-        <p id="status" class="status">載入幾何引擎中…</p>
+      <aside class="panel">
+        <section>
+          <h2>遊戲盒</h2>
+          <div class="row3">
+            <label>內闊 W<input id="boxW" type="number" min="20" step="0.5" /></label>
+            <label>內深 D<input id="boxD" type="number" min="20" step="0.5" /></label>
+            <label>內高 H<input id="boxH" type="number" min="10" step="0.5" /></label>
+          </div>
+          <label>頂部預留高度（板、說明書）<input id="reserved" type="number" min="0" step="0.5" /></label>
+          <label>打印機<select id="printer"></select></label>
+        </section>
+        <section>
+          <h2>配件</h2>
+          <div id="rows"></div>
+          <div class="add">
+            <button id="addCards" class="ghost">＋ 卡牌</button>
+            <button id="addTokens" class="ghost">＋ Token</button>
+          </div>
+        </section>
+      </aside>
+      <section class="stage">
+        <div id="viewer" class="viewer"></div>
+        <div class="results">
+          <div id="status" class="status">載入幾何引擎中…</div>
+          <div id="issues"></div>
+          <div class="trays-head">
+            <h2>Tray</h2>
+            <button id="downloadAll" disabled>下載全部 STL（zip）</button>
+          </div>
+          <ul id="trays" class="trays"></ul>
+        </div>
       </section>
-      <section id="viewer" class="viewer"></section>
     </main>
     <script type="module" src="/src/main.ts"></script>
   </body>

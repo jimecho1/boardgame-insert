@@ -1,38 +1,37 @@
-import type { ManifoldToplevel, Manifold } from 'manifold-3d';
-import type { Size3, Tolerances } from '../layout/types';
+import type { Manifold, ManifoldToplevel } from 'manifold-3d';
+import type { Tray } from '../layout/types';
+
+const GRIP_RADIUS = 11;
 
 /**
- * A single-pocket card tray. Cards stand upright: the pocket is
- * (stack thickness) wide, (card width) deep and holds the card's long edge vertically,
- * with a finger notch cut through the front wall.
+ * Build the solid for one tray from the layout, with its origin corner at (0, 0, 0), Z up.
+ * Pockets are cut down from the top face; card trays get a U-shaped finger channel
+ * running across the tray (through the walls and dividers) so a deck can be pinched out.
  */
-export function cardTray(wasm: ManifoldToplevel, stack: Size3, tol: Tolerances): { solid: Manifold; outer: Size3 } {
+export function buildTray(wasm: ManifoldToplevel, tray: Tray): Manifold {
   const { Manifold } = wasm;
+  let solid = Manifold.cube([tray.w, tray.d, tray.h]);
 
-  const pocket: Size3 = {
-    w: stack.h + tol.fit * 2, // stack thickness lies along X
-    d: stack.w + tol.fit * 2, // card width along Y
-    h: Math.min(stack.d * 0.6, 60), // cards stick out above the walls so they are easy to grab
-  };
-  const outer: Size3 = {
-    w: pocket.w + tol.wall * 2,
-    d: pocket.d + tol.wall * 2,
-    h: pocket.h + tol.floor,
-  };
+  for (const c of tray.compartments) {
+    const pocket = Manifold.cube([c.w, c.d, c.depth + 1]).translate([c.x, c.y, tray.h - c.depth]);
+    solid = solid.subtract(pocket);
+  }
 
-  const body = Manifold.cube([outer.w, outer.d, outer.h]);
-  const hole = Manifold.cube([pocket.w, pocket.d, pocket.h + 1]).translate([tol.wall, tol.wall, tol.floor]);
-
-  // Finger notch: a U-shaped cut through the front (Y = 0) wall, down to 40% of the wall height.
-  const notchR = Math.min(12, (pocket.w - 2) / 2);
-  const notchBottom = tol.floor + pocket.h * 0.4;
-  const through = tol.wall + 2;
-  const round = Manifold.cylinder(through, notchR, notchR, 48)
-    .rotate([-90, 0, 0]) // lay the cylinder along +Y
-    .translate([outer.w / 2, -1, notchBottom + notchR]);
-  const slot = Manifold.cube([notchR * 2, through, outer.h])
-    .translate([outer.w / 2 - notchR, -1, notchBottom + notchR]);
-  const notch = round.add(slot);
-
-  return { solid: body.subtract(hole).subtract(notch), outer };
+  if (tray.grip && tray.gripDepth) {
+    const across = tray.grip === 'x' ? tray.d : tray.w; // the side the channel is centred on
+    const length = (tray.grip === 'x' ? tray.w : tray.d) + 2;
+    const r = Math.min(GRIP_RADIUS, across / 4);
+    const bottom = tray.h - tray.gripDepth;
+    let round = Manifold.cylinder(length, r, r, 48);
+    let slot = Manifold.cube([2 * r, length, tray.h]);
+    if (tray.grip === 'x') {
+      round = round.rotate([0, 90, 0]).translate([-1, tray.d / 2, bottom + r]);
+      slot = Manifold.cube([length, 2 * r, tray.h]).translate([-1, tray.d / 2 - r, bottom + r]);
+    } else {
+      round = round.rotate([-90, 0, 0]).translate([tray.w / 2, -1, bottom + r]);
+      slot = slot.translate([tray.w / 2 - r, -1, bottom + r]);
+    }
+    solid = solid.subtract(round.add(slot));
+  }
+  return solid;
 }

@@ -4,6 +4,7 @@ export const CARD_SIZES: CardSizePreset[] = [
   { id: 'standard', label: 'Standard (Poker) 63.5 × 88', w: 63.5, h: 88 },
   { id: 'mini-euro', label: 'Mini Euro 44 × 68', w: 44, h: 68 },
   { id: 'euro', label: 'Euro 59 × 92', w: 59, h: 92 },
+  { id: '57x87', label: '57 × 87（Wingspan 等）', w: 57, h: 87 },
   { id: 'square', label: 'Square 70 × 70', w: 70, h: 70 },
   { id: 'tarot', label: 'Tarot 70 × 120', w: 70, h: 120 },
 ];
